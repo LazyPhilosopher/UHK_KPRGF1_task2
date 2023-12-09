@@ -17,6 +17,7 @@ public class ModelDataBase {
     private List<List<List<Point>>> coordinated_point_stack = new ArrayList<>();
     private List<Point> last_added_point_stack = new ArrayList<>();
 
+    private List<Point> point_stack = new ArrayList<>();
     private List<Line> line_stack = new ArrayList<>();
     private List<Polygon> polygon_stack = new ArrayList<>();
 
@@ -68,6 +69,7 @@ public class ModelDataBase {
      */
     public void addPoint(Point new_point){
         last_added_point_stack.add(new_point);
+        point_stack.add(new_point);
         coordinated_point_stack.get(new_point.X()).get(new_point.Y()).add(new_point);
     }
 
@@ -241,6 +243,7 @@ public class ModelDataBase {
     public void movePoint(Point point, int dest_x, int dest_y){
         List<Point> point_list = coordinated_point_stack.get(point.X()).get(point.Y());
         point_list.remove(point);
+        point_stack.remove(point);
         coordinated_point_stack.get(dest_x).get(dest_y).add(point);
     }
 
@@ -254,6 +257,7 @@ public class ModelDataBase {
         List<Point> point_list = coordinated_point_stack.get(point.X()).get(point.Y());
         last_added_point_stack.remove(point);
         point_list.remove(point);
+        point_stack.remove(point);
     }
 
     /**

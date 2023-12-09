@@ -1,13 +1,11 @@
 package utils.Controller;
 
 import gui.Panel;
-import rasterize.CommonRasterizer;
-import rasterize.Raster;
+import rasterize.*;
 import struct.Line;
 import struct.Point;
 import struct.Polygon;
 import utils.ModelDataBase;
-import utils.gui.Button;
 import utils.gui.Menu;
 
 import javax.swing.*;
@@ -30,17 +28,19 @@ public class Controller2D implements Controller {
     private final Panel panel;
 
     private int x,y;
-    private CommonRasterizer rasterizer;
+    private PolygonRasterizer polygon_rasterizer;
+    private LineRasterizer line_rasterizer;
+    private PointRasterizer point_rasterizer;
     private ModelDataBase model_stack;
     private Point active_point = null;
     Menu menu = new Menu(15, 10);
 
     Map<Integer, String> modes = new HashMap<Integer, String>() {{
-        put(1, "1 - line");
-        put(2, "2 - polygon");
-        put(3, "3 - point");
-        put(4, "4 - drag point");
-        put(5, "5 - ellipse");
+        put(1, "line");
+        put(2, "polygon");
+        put(3, "point");
+        put(4, "drag point");
+        put(5, "ellipse");
     }};
     private Integer mode_key = (Integer) modes.keySet().toArray()[0];
 
@@ -60,7 +60,9 @@ public class Controller2D implements Controller {
      */
     private void initObjects(Raster raster) {
         model_stack = new ModelDataBase(panel.getWidth(), panel.getHeight());
-        rasterizer = new CommonRasterizer(raster);
+        point_rasterizer = new PointRasterizer(raster);
+        line_rasterizer = new LineRasterizer(raster);
+        polygon_rasterizer = new PolygonRasterizer(raster);
         drawUI();
      }
 
@@ -85,7 +87,7 @@ public class Controller2D implements Controller {
                 new Point(menu_padding + menu_x_dimension, y),
                 new Point(menu_padding, y));
         menu.setMenuBoundaries(new Polygon(menu_vertices));
-        rasterizer.drawPolygon(menu.getMenuBoundaries(), 0x333333);
+        polygon_rasterizer.drawPolygon(menu.getMenuBoundaries(), 0x333333);
 
         // Draw each menu button
         int start_x_pos = menu_padding + margin;
@@ -97,7 +99,7 @@ public class Controller2D implements Controller {
                     new Point(start_x_pos + menu_dimensions[0] - 2*margin, start_y_pos + margin),
                     new Point(start_x_pos, start_y_pos + margin));
             menu.addButtonBoundaries(mode, new Polygon(button_vertices));
-            rasterizer.drawPolygon(menu.getButtonBoundaries(mode), Objects.equals(mode, mode_key) ? 0x00AA00 : 0x000000);
+            polygon_rasterizer.drawPolygon(menu.getButtonBoundaries(mode), Objects.equals(mode, mode_key) ? 0x00AA00 : 0x000000);
             panel.writeText(menu.getButton(mode).getText(),
                     menu.getFontSize(), start_x_pos + margin, start_y_pos, 0xFFFFFF);
 
@@ -111,10 +113,10 @@ public class Controller2D implements Controller {
         drawUI();
 
         for (Line line : model_stack.getLineStack()) {
-            rasterizer.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0xff0000));
+            line_rasterizer.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0xff0000));
         }
         for (Polygon polygon : model_stack.getPolygonStack()) {
-            rasterizer.drawPolygon(polygon, 0x00ff00);
+            polygon_rasterizer.drawPolygon(polygon, 0x00ff00);
         }
 
         // unoptimized way of drawing points
@@ -125,7 +127,7 @@ public class Controller2D implements Controller {
             for (int y = 0; y < model_stack_height; y++) {
                 List<Point> points = model_stack.getPointStack().get(x).get(y);
                 for (Point point : points) {
-                    rasterizer.drawPoint(point.X(), point.Y(), model_stack.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
+                    point_rasterizer.drawPoint(point.X(), point.Y(), model_stack.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
                 }
             }
         }
@@ -133,14 +135,40 @@ public class Controller2D implements Controller {
 
     @Override
     public void initListeners(Panel panel) {
-        // TODO panel resize functionality
         panel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 panel.resize();
                 panel.clear();
-                rasterizer = new CommonRasterizer(panel.getRaster());
+                point_rasterizer = new PointRasterizer(panel.getRaster());
+                line_rasterizer = new LineRasterizer(panel.getRaster());
+                polygon_rasterizer = new PolygonRasterizer(panel.getRaster());
                 repaint();
+            }
+        });
+
+        panel.addMouseMotionListener(new MouseAdapter() {
+            // Click and drag point.
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                repaint();
+                x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
+                y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
+                if (Objects.equals(mode_key, 4)) {
+                    dragPointMode(x, y);
+                }
+                drawUI();
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                repaint();
+                x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
+                y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
+                if(Objects.equals(mode_key, 1)){
+                    drawProposedLineInLineMode(e.isShiftDown(), x, y);
+                }
+                drawUI();
             }
         });
 
@@ -151,13 +179,15 @@ public class Controller2D implements Controller {
                 if (e.isControlDown()) return;
 
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    x = e.getX() <= panel.getWidth() ? e.getX() : panel.getWidth()-1;
-                    y = e.getY() <= panel.getWidth() ? e.getY() : panel.getHeight()-1;
+                    x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
+                    y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
 
                     if(mouseClickedMenuRoutine(x, y)){return;}
 
                     if (Objects.equals(mode_key, 1)) {
                         clickInLineMode(e.isShiftDown(), x, y);
+                    }else if (Objects.equals(mode_key, 3)) {
+                        clickInPointMode(x, y);
                     }
 
                     repaint();
@@ -216,6 +246,46 @@ public class Controller2D implements Controller {
             Point point1 = model_stack.popTempPoint(0);
             Point point2 = model_stack.popTempPoint(0);
             model_stack.addLine(new Line(point1, point2));
+        }
+    }
+
+    // Point mode mouse click routine.
+    private void clickInPointMode(int x, int y){
+        model_stack.addPoint(new Point(x, y));
+    }
+
+    // Drag-point mode mouse click routine.
+    private void dragPointMode(int x, int y){
+        // search for point user is dragging.
+        if (active_point == null){
+            active_point = model_stack.getClosestPoint(x, y, 5);
+        }
+        if (active_point != null) {
+            model_stack.movePoint(active_point, x, y);
+            active_point.setCoordinates(x, y);
+        }
+        // Repaint every object in database
+        repaint();
+    }
+
+    // Drag-point mode mouse click routine.
+    private void drawProposedLineInLineMode(boolean shift_pressed, int x, int y){
+        repaint();
+        if(model_stack.getLastAddedPointStack().size() == 1){
+            Point start_point = model_stack.getTempPoint(0);
+            if (shift_pressed) {
+                if (model_stack.getLastAddedPointStack().size() == 1) {
+                    int delta_x = Math.abs(start_point.X() - x);
+                    int delta_y = Math.abs(start_point.Y() - y);
+                    if(delta_x < delta_y && delta_x < 15) {
+                        x = start_point.X();
+                    }
+                    if(delta_x > delta_y && delta_y < 15) {
+                        y = start_point.Y();
+                    }
+                }
+            }
+            line_rasterizer.drawDottedLine(5, start_point.X(), start_point.Y(), x, y, new Color(0x00FF00));
         }
     }
 

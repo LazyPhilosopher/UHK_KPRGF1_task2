@@ -24,7 +24,4 @@ public abstract class Rasterizer {
 
     public void rasterize(int x1, int y1, int x2, int y2, Color color) {}
 
-    protected void drawLine(int x1, int y1, int x2, int y2) {}
-
-    public abstract void drawLine(int x1, int y1, int x2, int y2, Color color);
 }
