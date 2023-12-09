@@ -5,24 +5,23 @@ import java.util.List;
 
 public class Ellipse {
 
-    private Point _center_point;
-    int _semi_minor, _semi_major;
+    private Point _center_point, _semi_minor_point, _semi_major_point;
 
-    public Ellipse(Point center_point, int semi_minor, int semi_major){
+    public Ellipse(Point center_point, Point semi_minor_point, Point semi_major_point){
         this._center_point = center_point;
-        this._semi_minor = semi_minor;
-        this._semi_major = semi_major;
+        this._semi_minor_point = semi_minor_point;
+        this._semi_major_point = semi_major_point;
     }
 
     public Point center_point(){
         return this._center_point;
     }
 
-    public int semi_minor(){
-        return this._semi_minor;
+    public int semi_major(){
+        return Math.abs(this._center_point.X() - this._semi_major_point.X());
     }
 
-    public int semi_major(){
-        return this._semi_major;
+    public int semi_minor(){
+        return Math.abs(this._center_point.Y() - this._semi_minor_point.Y());
     }
 }

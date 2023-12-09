@@ -46,6 +46,8 @@ public class ModelDataBase {
         line_stack = new ArrayList<>();
         last_added_point_stack = new ArrayList<>();
         polygon_stack = new ArrayList<>();
+        point_stack = new ArrayList<>();
+        ellipse_stack = new ArrayList<>();
 
         for (int x = 0; x < x_axis_size; x++) {
             coordinated_point_stack.add(new ArrayList<>());
@@ -70,7 +72,7 @@ public class ModelDataBase {
      * @param new_point New Point structure.
      */
     public void addPoint(Point new_point){
-//        last_added_point_stack.add(new_point);
+        last_added_point_stack.add(new_point);
         point_stack.add(new_point);
         coordinated_point_stack.get(new_point.X()).get(new_point.Y()).add(new_point);
     }
@@ -153,7 +155,7 @@ public class ModelDataBase {
      * @param pos stack item index.
      * @return Point structure.
      */
-    public Point popTempPoint(int pos){
+    public Point popLastAddedPoint(int pos){
         Point out = last_added_point_stack.get(pos);
         last_added_point_stack.remove(pos);
         return out;

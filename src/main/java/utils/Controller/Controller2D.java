@@ -115,8 +115,8 @@ public class Controller2D implements Controller {
         panel.clear();
         drawUI();
 
-        for (Line line : model_stack.getLineStack()) {
-            line_rasterizer.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0xff0000));
+        for (Polygon polygon : model_stack.getPolygonStack()) {
+            polygon_rasterizer.drawPolygon(polygon, 0x0000FF);
         }
 
         for (Ellipse ellipse : model_stack.getEllipseStack()) {
@@ -124,8 +124,8 @@ public class Controller2D implements Controller {
             point_rasterizer.drawPoint(ellipse.center_point(), 0xFFFFFF);
         }
 
-        for (Polygon polygon : model_stack.getPolygonStack()) {
-            polygon_rasterizer.drawPolygon(polygon, 0x0000FF);
+        for (Line line : model_stack.getLineStack()) {
+            line_rasterizer.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0xff0000));
         }
 
         for (Point point : model_stack.getPointStack()){
@@ -204,6 +204,18 @@ public class Controller2D implements Controller {
             }
         });
 
+        panel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_C) {
+                    model_stack.init();
+
+                    // Undo previously placed point.
+                }
+                repaint();
+            }
+        });
+
     }
 
     public boolean mouseClickedMenuRoutine(int x, int y){
@@ -211,6 +223,7 @@ public class Controller2D implements Controller {
             if(clickIsWithinRectangle(x, y, menu.getButtonBoundaries(mode))){
                 System.out.printf("Mode: %s\n", modes.get(mode));
                 mode_key = mode;
+                model_stack.emptyTempPoints();
                 drawUI();
                 return true;
             }
@@ -247,8 +260,8 @@ public class Controller2D implements Controller {
 
         // if single point already present in last added point stack - create a line instance.
         if(model_stack.getLastAddedPointStack().size() >= 2){
-            Point point1 = model_stack.popTempPoint(0);
-            Point point2 = model_stack.popTempPoint(0);
+            Point point1 = model_stack.popLastAddedPoint(0);
+            Point point2 = model_stack.popLastAddedPoint(0);
             model_stack.addLine(new Line(point1, point2));
         }
     }
@@ -328,8 +341,24 @@ public class Controller2D implements Controller {
     }
 
     private void clickInEllipseMode(int x, int y){
-        Point point = new Point(x,y);
-        model_stack.addPoint(point);
-        model_stack.addEllipse(new Ellipse(point, 50, 100));
+        if (model_stack.getLastAddedPointStack().size() == 0){
+            Point point = new Point(x,y);
+            model_stack.addPoint(point);
+        } else if (model_stack.getLastAddedPointStack().size() == 1) {
+            y = model_stack.getLastAddedPointStack().get(0).Y();
+            Point point = new Point(x,y);
+            model_stack.addPoint(point);
+        }  else if (model_stack.getLastAddedPointStack().size() == 2) {
+            x = model_stack.getLastAddedPointStack().get(0).X();
+            Point point = new Point(x,y);
+            model_stack.addPoint(point);
+
+            Point center_point = model_stack.popLastAddedPoint(0);
+            Point minor_axis_point = model_stack.popLastAddedPoint(0);
+            Point major_axis_point = model_stack.popLastAddedPoint(0);
+            model_stack.addEllipse(new Ellipse(center_point, major_axis_point, minor_axis_point));
+        }
+
+
     }
 }
