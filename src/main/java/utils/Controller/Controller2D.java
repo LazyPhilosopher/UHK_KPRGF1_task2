@@ -33,7 +33,7 @@ public class Controller2D implements Controller {
     private CommonRasterizer rasterizer;
     private ModelDataBase model_stack;
     private Point active_point = null;
-    Menu menu = new Menu(10, 10);
+    Menu menu = new Menu(15, 10);
 
     Map<Integer, String> modes = new HashMap<Integer, String>() {{
         put(1, "1 - line");
@@ -101,7 +101,7 @@ public class Controller2D implements Controller {
             panel.writeText(menu.getButton(mode).getText(),
                     menu.getFontSize(), start_x_pos + margin, start_y_pos, 0xFFFFFF);
 
-            start_y_pos += menu.getFontSize() + 2*margin;
+            start_y_pos += menu.getButton(mode).getSizeY() + margin;
         }
     }
 

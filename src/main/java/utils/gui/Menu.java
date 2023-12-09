@@ -77,10 +77,10 @@ public class Menu {
                 .orElse(0);
         max_button_x_size += 2*_margin;
 
-        int max_button_y_size = _buttons.values().stream()
+        int sum_button_y_size = _buttons.values().stream()
                 .mapToInt(Button::getSizeY)
                 .sum();
-        max_button_y_size += (int) ((_buttons.size()+1) * _margin);
-        return new int[]{max_button_x_size, max_button_y_size};
+        sum_button_y_size += (int) ((_buttons.size()+1) * _margin);
+        return new int[]{max_button_x_size, sum_button_y_size};
     }
 }

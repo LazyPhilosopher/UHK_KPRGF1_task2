@@ -38,7 +38,7 @@ public class Button {
     public void setTextSize(int font_size) {
         this._font_size = font_size;
         this._x_size = (int) (_text.length() * (font_size+1) / 2);
-        this._y_size = (int) (font_size * 1.5);
+        this._y_size = (int) (font_size * 2);
     }
 
     public int getSizeX(){
