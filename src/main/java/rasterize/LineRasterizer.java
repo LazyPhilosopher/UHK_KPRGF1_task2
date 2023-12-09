@@ -22,11 +22,12 @@ public class LineRasterizer extends CommonRasterizer{
         List<struct.Point> points = getLinePoints(x1, y1, x2, y2);
         int step = 0;
         for (Point point : points) {
+            step += 1;
             if (step % (2*dot_size) < dot_size){
                 continue;
             }
             this.raster.setPixel(point.X(), point.Y(), color.getRGB());
-            step += 1;
+
         }
     }
 

@@ -2,6 +2,7 @@ package utils.Controller;
 
 import gui.Panel;
 import rasterize.*;
+import struct.Ellipse;
 import struct.Line;
 import struct.Point;
 import struct.Polygon;
@@ -31,6 +32,7 @@ public class Controller2D implements Controller {
     private PolygonRasterizer polygon_rasterizer;
     private LineRasterizer line_rasterizer;
     private PointRasterizer point_rasterizer;
+    private EllipseRasterizer ellipse_rasterizer;
     private ModelDataBase model_stack;
     private Point active_point = null;
     Menu menu = new Menu(15, 10);
@@ -63,7 +65,8 @@ public class Controller2D implements Controller {
         point_rasterizer = new PointRasterizer(raster);
         line_rasterizer = new LineRasterizer(raster);
         polygon_rasterizer = new PolygonRasterizer(raster);
-        drawUI();
+        ellipse_rasterizer = new EllipseRasterizer(raster);
+        repaint();
      }
 
     // Draw mode-switching menu.
@@ -115,21 +118,18 @@ public class Controller2D implements Controller {
         for (Line line : model_stack.getLineStack()) {
             line_rasterizer.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0xff0000));
         }
-        for (Polygon polygon : model_stack.getPolygonStack()) {
-            polygon_rasterizer.drawPolygon(polygon, 0x00ff00);
+
+        for (Ellipse ellipse : model_stack.getEllipseStack()) {
+            ellipse_rasterizer.drawEllipse(ellipse);
+            point_rasterizer.drawPoint(ellipse.center_point(), 0xFFFFFF);
         }
 
-        // unoptimized way of drawing points
-        // next version should avoid iterating through every coordinate on panel
-        int model_stack_width = model_stack.getPointStack().size();
-        int model_stack_height = model_stack.getPointStack().get(0).size();
-        for (int x = 0; x < model_stack_width; x++) {
-            for (int y = 0; y < model_stack_height; y++) {
-                List<Point> points = model_stack.getPointStack().get(x).get(y);
-                for (Point point : points) {
-                    point_rasterizer.drawPoint(point.X(), point.Y(), model_stack.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
-                }
-            }
+        for (Polygon polygon : model_stack.getPolygonStack()) {
+            polygon_rasterizer.drawPolygon(polygon, 0x0000FF);
+        }
+
+        for (Point point : model_stack.getPointStack()){
+            point_rasterizer.drawPoint(point.X(), point.Y(), model_stack.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
         }
     }
 
@@ -157,7 +157,7 @@ public class Controller2D implements Controller {
                 if (Objects.equals(mode_key, 4)) {
                     dragPointMode(x, y);
                 }
-                drawUI();
+                repaint();
             }
 
             @Override
@@ -168,7 +168,7 @@ public class Controller2D implements Controller {
                 if(Objects.equals(mode_key, 1)){
                     drawProposedLineInLineMode(e.isShiftDown(), x, y);
                 }
-                drawUI();
+                repaint();
             }
         });
 
@@ -188,6 +188,10 @@ public class Controller2D implements Controller {
                         clickInLineMode(e.isShiftDown(), x, y);
                     }else if (Objects.equals(mode_key, 3)) {
                         clickInPointMode(x, y);
+                    }else if(Objects.equals(mode_key, 2)){
+                        clickInPolygonMode(x, y);
+                    }else if(Objects.equals(mode_key, 5)){
+                        clickInEllipseMode(x, y);
                     }
 
                     repaint();
@@ -264,13 +268,10 @@ public class Controller2D implements Controller {
             model_stack.movePoint(active_point, x, y);
             active_point.setCoordinates(x, y);
         }
-        // Repaint every object in database
-        repaint();
     }
 
     // Drag-point mode mouse click routine.
     private void drawProposedLineInLineMode(boolean shift_pressed, int x, int y){
-        repaint();
         if(model_stack.getLastAddedPointStack().size() == 1){
             Point start_point = model_stack.getTempPoint(0);
             if (shift_pressed) {
@@ -313,5 +314,22 @@ public class Controller2D implements Controller {
             return false;
         }
         return true;
+    }
+
+    // Polygon mode mouse click routine.
+    private void clickInPolygonMode(int x, int y){
+        Point closest_point = model_stack.getClosestPoint(x, y, 5);
+        if (model_stack.getLastAddedPointStack().size() > 2 && model_stack.getLastAddedPointStack().contains(closest_point)){
+            model_stack.addPolygon(new Polygon(model_stack.getLastAddedPointStack()));
+            model_stack.emptyTempPoints();
+        } else if (closest_point != null) {
+            model_stack.addTempPoint(closest_point);
+        }
+    }
+
+    private void clickInEllipseMode(int x, int y){
+        Point point = new Point(x,y);
+        model_stack.addPoint(point);
+        model_stack.addEllipse(new Ellipse(point, 50, 100));
     }
 }

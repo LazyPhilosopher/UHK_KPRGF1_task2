@@ -1,5 +1,6 @@
 package utils;
 
+import struct.Ellipse;
 import struct.Line;
 import struct.Point;
 import struct.Polygon;
@@ -20,6 +21,7 @@ public class ModelDataBase {
     private List<Point> point_stack = new ArrayList<>();
     private List<Line> line_stack = new ArrayList<>();
     private List<Polygon> polygon_stack = new ArrayList<>();
+    private List<Ellipse> ellipse_stack = new ArrayList<>();
 
     /**
      * Class initialization method.
@@ -68,7 +70,7 @@ public class ModelDataBase {
      * @param new_point New Point structure.
      */
     public void addPoint(Point new_point){
-        last_added_point_stack.add(new_point);
+//        last_added_point_stack.add(new_point);
         point_stack.add(new_point);
         coordinated_point_stack.get(new_point.X()).get(new_point.Y()).add(new_point);
     }
@@ -92,6 +94,10 @@ public class ModelDataBase {
         polygon_stack.add(new_polygon);
     }
 
+    public void addEllipse(Ellipse new_ellipse){
+        ellipse_stack.add(new_ellipse);
+    }
+
     /**
      * Line structure stack getter method.
      *
@@ -109,8 +115,12 @@ public class ModelDataBase {
      *
      * @return Coordinated point stack array.
      */
-    public List<List<List<Point>>> getPointStack(){
+    public List<List<List<Point>>> getCoordinatedPointStack(){
         return coordinated_point_stack;
+    }
+
+    public List<Point> getPointStack(){
+        return point_stack;
     }
 
     /**
@@ -130,6 +140,11 @@ public class ModelDataBase {
     public List<Polygon> getPolygonStack(){
         return polygon_stack;
     }
+
+    public List<Ellipse> getEllipseStack(){
+        return ellipse_stack;
+    }
+
 
     /**
      * Pop Point structure from Last added Point stack.
@@ -242,9 +257,9 @@ public class ModelDataBase {
      */
     public void movePoint(Point point, int dest_x, int dest_y){
         List<Point> point_list = coordinated_point_stack.get(point.X()).get(point.Y());
-        point_list.remove(point);
-        point_stack.remove(point);
+//        point_stack.remove(point);
         coordinated_point_stack.get(dest_x).get(dest_y).add(point);
+        point.setCoordinates(dest_x, dest_y);
     }
 
     /**
