@@ -12,12 +12,16 @@ public class SeedFillRasterizer extends CommonRasterizer{
     }
 
     public void seedFill(int x, int y){
-        int base_color = raster.getPixel(x, y-5);
+//        int depth = 1000;
+        int base_color = raster.getPixel(x, y);
         boundaryFill(x, y, 0x123456, base_color);
 
     }
 
     public void boundaryFill(int x, int y, int new_color, int base_color){
+//        if (depth <=0){
+//            return;
+//        }
 
         if(0 > x || x > raster.getWidth()-1){
             return;
@@ -36,7 +40,5 @@ public class SeedFillRasterizer extends CommonRasterizer{
         boundaryFill(x - 1, y, new_color, base_color);
         boundaryFill(x, y + 1, new_color, base_color);
         boundaryFill(x, y - 1, new_color, base_color);
-        System.out.println("Seed!");
-
     }
 }

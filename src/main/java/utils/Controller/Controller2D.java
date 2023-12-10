@@ -292,7 +292,7 @@ public class Controller2D implements Controller {
 
         Point point = new Point(x, y);
         // Search for already existing closest point.
-        Point closest_point = model_stack.getClosestPoint(x ,y, 25);
+        Point closest_point = model_stack.getClosestPoint(x ,y, 5);
         if (closest_point != null){
             point = closest_point;
             model_stack.addTempPoint(point);
@@ -384,6 +384,10 @@ public class Controller2D implements Controller {
             model_stack.emptyTempPoints();
         } else if (closest_point != null) {
             model_stack.addTempPoint(closest_point);
+        } else {
+            Point new_point = new Point(x, y);
+            model_stack.addPoint(new_point);
+            model_stack.addTempPoint(new_point);
         }
         repaint();
     }
