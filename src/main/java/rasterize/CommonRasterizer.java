@@ -18,20 +18,20 @@ public class CommonRasterizer extends Rasterizer {
 
     /**
      * Get points laying on the line defined by coordinates.
-     * @param forced_y_axis only single active pixel on each Y-axis row.
+     *
      * @param x1 source point X axis.
      * @param y1 source point Y axis.
      * @param x2 end point X axis.
      * @param y2 end point Y axis.
      * @return list of points.
      */
-    public List<Point> getLinePoints(boolean forced_y_axis, int x1, int y1, int x2, int y2){
+    public List<Point> getLinePoints(String mode, int x1, int y1, int x2, int y2){
 
         List<Point> out = new ArrayList<>();
         float k = (float) (y2 - y1) /(x2-x1);
         float q = y1 - k*x1;
 
-        if (Math.abs(k) >= 1 || forced_y_axis) {
+        if ( Objects.equals(mode, "Y") || (Objects.equals(mode, null) && Math.abs(k) > 1)) {
             // Y-axis oriented
             int max_y = Math.max(y1, y2);
             int min_y = Math.min(y1, y2);
@@ -43,7 +43,7 @@ public class CommonRasterizer extends Rasterizer {
                 }
                 out.add(new Point((int) temp_x, i));
             }
-        } else {
+        } else if (Objects.equals(mode, "X") || (Objects.equals(mode, null) && Math.abs(k) < 1)){
             // X-axis oriented
             int max_x = Math.max(x1, x2);
             int min_x = Math.min(x1, x2);
@@ -61,11 +61,24 @@ public class CommonRasterizer extends Rasterizer {
 
     /**Draw solid line without forced y-axis preference. */
     public List<Point> getLinePoints(int x1, int y1, int x2, int y2){
-        return getLinePoints(false, x1, y1, x2, y2);
+        return getLinePoints(null, x1, y1, x2, y2);
+    }
+    public List<Point> getYOrientedLinePoints(int x1, int y1, int x2, int y2){
+        return getLinePoints("Y", x1, y1, x2, y2);
+    }
+    public List<Point> getXOrientedLinePoints(int x1, int y1, int x2, int y2){
+        return getLinePoints("X", x1, y1, x2, y2);
     }
 
     public List<Point> getLinePoints(Point a, Point b){
-        return getLinePoints(false, a.X(), a.Y(), b.X(), b.Y());
+        return getLinePoints(null, a.X(), a.Y(), b.X(), b.Y());
+    }
+
+    public List<Point> getYOrientedLinePoints(Point a, Point b){
+        return getLinePoints("Y", a.X(), a.Y(), b.X(), b.Y());
+    }
+    public List<Point> getXOrientedLinePoints(Point a, Point b){
+        return getLinePoints("X", a.X(), a.Y(), b.X(), b.Y());
     }
 
 

@@ -12,10 +12,8 @@ import utils.gui.Menu;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 
 /**
@@ -66,6 +64,30 @@ public class Controller2D implements Controller {
         line_rasterizer = new LineRasterizer(raster);
         polygon_rasterizer = new PolygonRasterizer(raster);
         ellipse_rasterizer = new EllipseRasterizer(raster);
+
+
+//        Point p1 = new Point(50, 50);
+//        Point p2 = new Point(100, 250);
+//        Point p3 = new Point(300, 200);
+//        Point p4 = new Point(100, 50);
+//        Point p5 = new Point(20, 50);
+//
+//        model_stack.addPoint(p1);
+//        model_stack.addPoint(p2);
+//        model_stack.addPoint(p3);
+//        model_stack.addPoint(p4);
+//        model_stack.addPoint(p5);
+//
+//
+//        List<Point> vertices = new ArrayList<>();
+//        vertices.add(p1);
+//        vertices.add(p2);
+//        vertices.add(p3);
+//        vertices.add(p4);
+//        vertices.add(p5);
+//
+//        Polygon poly = new Polygon(vertices);
+//        model_stack.addPolygon(poly);
         repaint();
      }
 
@@ -113,7 +135,6 @@ public class Controller2D implements Controller {
     // redraw objects stored in model_stack
     private void repaint() {
         panel.clear();
-        drawUI();
 
         for (Polygon polygon : model_stack.getPolygonStack()) {
             polygon_rasterizer.drawPolygon(polygon, 0x0000FF);
@@ -131,6 +152,7 @@ public class Controller2D implements Controller {
         for (Point point : model_stack.getPointStack()){
             point_rasterizer.drawPoint(point.X(), point.Y(), model_stack.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
         }
+        drawUI();
     }
 
     @Override
@@ -165,10 +187,18 @@ public class Controller2D implements Controller {
                 repaint();
                 x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
                 y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
-                if(Objects.equals(mode_key, 1)){
+                if(Objects.equals(modes.get(mode_key), "line")){
                     drawProposedLineInLineMode(e.isShiftDown(), x, y);
+                } if(Objects.equals(modes.get(mode_key), "ellipse")){
+                    if (model_stack.getLastAddedPointStack().size() == 2) {
+
+                        Point center_point = model_stack.getLastAddedPointStack().get(0);
+                        Point minor_axis_point = model_stack.getLastAddedPointStack().get(1);
+                        Point major_axis_point = new Point(center_point.X(), y);
+                        ellipse_rasterizer.drawEllipse(new Ellipse(center_point, major_axis_point, minor_axis_point));
+                        point_rasterizer.drawPoint(major_axis_point, 0xFF0000);
+                    }
                 }
-                repaint();
             }
         });
 
@@ -184,13 +214,13 @@ public class Controller2D implements Controller {
 
                     if(mouseClickedMenuRoutine(x, y)){return;}
 
-                    if (Objects.equals(mode_key, 1)) {
+                    if (Objects.equals(modes.get(mode_key), "line")) {
                         clickInLineMode(e.isShiftDown(), x, y);
-                    }else if (Objects.equals(mode_key, 3)) {
+                    }else if (Objects.equals(modes.get(mode_key), "point")) {
                         clickInPointMode(x, y);
-                    }else if(Objects.equals(mode_key, 2)){
+                    }else if(Objects.equals(modes.get(mode_key), "polygon")){
                         clickInPolygonMode(x, y);
-                    }else if(Objects.equals(mode_key, 5)){
+                    }else if(Objects.equals(modes.get(mode_key), "ellipse")){
                         clickInEllipseMode(x, y);
                     }
 
@@ -249,7 +279,7 @@ public class Controller2D implements Controller {
 
         Point point = new Point(x, y);
         // Search for already existing closest point.
-        Point closest_point = model_stack.getClosestPoint(x ,y, 5);
+        Point closest_point = model_stack.getClosestPoint(x ,y, 25);
         if (closest_point != null){
             point = closest_point;
             model_stack.addTempPoint(point);
