@@ -3,6 +3,9 @@ package rasterize;
 import struct.Point;
 import struct.Ellipse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class EllipseRasterizer extends CommonRasterizer{
 
@@ -13,6 +16,7 @@ public class EllipseRasterizer extends CommonRasterizer{
     // Midpoint Ellipse Algorithm
     public void drawEllipse(Ellipse ellipse) {
         Point center = ellipse.center_point();
+        List<Point> border = new ArrayList<>();
         int center_x = center.X();
         int center_y = center.Y();
         int semi_major = ellipse.semi_major();
@@ -30,7 +34,16 @@ public class EllipseRasterizer extends CommonRasterizer{
         // For region 1
         while (dx < dy)
         {
-            plotPoints(center_x, center_y, x, y);
+//            plotPoints(center_x, center_y, x, y);
+            raster.setPixel(center_x + x, center_y + y, 0x00FF00);
+            raster.setPixel(center_x - x, center_y + y, 0x00FF00);
+            raster.setPixel(center_x + x, center_y - y, 0x00FF00);
+            raster.setPixel(center_x - x, center_y - y, 0x00FF00);
+            border.add(new Point(center_x + x, center_y + y));
+            border.add(new Point(center_x - x, center_y + y));
+            border.add(new Point(center_x + x, center_y - y));
+            border.add(new Point(center_x - x, center_y - y));
+
 
             // Checking and updating value of
             // decision parameter based on algorithm
@@ -58,7 +71,16 @@ public class EllipseRasterizer extends CommonRasterizer{
         // Plotting points of region 2
         while (y >= 0) {
 
-            plotPoints(center_x, center_y, x, y);
+//            plotPoints(center_x, center_y, x, y);
+            raster.setPixel(center_x + x, center_y + y, 0x00FF00);
+            raster.setPixel(center_x - x, center_y + y, 0x00FF00);
+            raster.setPixel(center_x + x, center_y - y, 0x00FF00);
+            raster.setPixel(center_x - x, center_y - y, 0x00FF00);
+            border.add(new Point(center_x + x, center_y + y));
+            border.add(new Point(center_x - x, center_y + y));
+            border.add(new Point(center_x + x, center_y - y));
+            border.add(new Point(center_x - x, center_y - y));
+
 
             // Checking and updating parameter
             // value based on algorithm
@@ -76,6 +98,23 @@ public class EllipseRasterizer extends CommonRasterizer{
         }
     }
 
+    public List<Point> seedFillNextStep(Point center, List<Point> border){
+        List<Point> out = new ArrayList<>();
+        List<Point> temp = new ArrayList<>();
+        temp.add(new Point(center.X()-1, center.Y()));
+        temp.add(new Point(center.X()+1, center.Y()));
+        temp.add(new Point(center.X(), center.Y()-1));
+        temp.add(new Point(center.X(), center.Y()+1));
+
+
+        for (Point point :temp){
+            if (!border.contains(point)){
+                out.add(point);
+            }
+        }
+        return out;
+    }
+
     // Print points based on 4-way symmetry
     private void plotPoints(int cx, int cy, int x, int y) {
         raster.setPixel(cx + x, cy + y, 0x00FF00);
@@ -83,4 +122,6 @@ public class EllipseRasterizer extends CommonRasterizer{
         raster.setPixel(cx + x, cy - y, 0x00FF00);
         raster.setPixel(cx - x, cy - y, 0x00FF00);
     }
+
+
 }

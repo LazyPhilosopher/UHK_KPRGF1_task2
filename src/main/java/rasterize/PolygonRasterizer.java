@@ -28,6 +28,7 @@ public class PolygonRasterizer extends CommonRasterizer  {
             Point a = polygon_vertices.get(i);
             Point b = polygon_vertices.get(i+1);
             border_pixels.addAll(getYOrientedLinePoints(a.X(), a.Y(), b.X(), b.Y()));
+//            border_pixels.remove(b);
         }
         Map<Integer, List<Integer>> pixels_on_y_axis = new HashMap<>();
         for (Point pixel : border_pixels){

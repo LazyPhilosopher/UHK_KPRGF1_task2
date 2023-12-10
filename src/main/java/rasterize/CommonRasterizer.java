@@ -81,7 +81,6 @@ public class CommonRasterizer extends Rasterizer {
         return getLinePoints("X", a.X(), a.Y(), b.X(), b.Y());
     }
 
-
     public void clear(){
         raster.clear();
     }

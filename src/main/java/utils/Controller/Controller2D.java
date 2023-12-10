@@ -31,6 +31,7 @@ public class Controller2D implements Controller {
     private LineRasterizer line_rasterizer;
     private PointRasterizer point_rasterizer;
     private EllipseRasterizer ellipse_rasterizer;
+    private SeedFillRasterizer seed_fill_rasterizer;
     private ModelDataBase model_stack;
     private Point active_point = null;
     Menu menu = new Menu(15, 10);
@@ -41,6 +42,7 @@ public class Controller2D implements Controller {
         put(3, "point");
         put(4, "drag point");
         put(5, "ellipse");
+        put(6, "seed fill");
     }};
     private Integer mode_key = (Integer) modes.keySet().toArray()[0];
 
@@ -64,6 +66,7 @@ public class Controller2D implements Controller {
         line_rasterizer = new LineRasterizer(raster);
         polygon_rasterizer = new PolygonRasterizer(raster);
         ellipse_rasterizer = new EllipseRasterizer(raster);
+        seed_fill_rasterizer = new SeedFillRasterizer(raster);
 
 
 //        Point p1 = new Point(50, 50);
@@ -175,20 +178,26 @@ public class Controller2D implements Controller {
             public void mouseDragged(MouseEvent e) {
                 repaint();
                 x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
-                y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
+                y = e.getY() < panel.getHeight() ? e.getY() : panel.getHeight()-1;
+                x = Math.max(e.getX(), 0);
+                y = Math.max(e.getY(), 0);
+
                 if (Objects.equals(mode_key, 4)) {
                     dragPointMode(x, y);
+                    repaint();
                 }
-                repaint();
             }
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                repaint();
                 x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
-                y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
+                y = e.getY() < panel.getHeight() ? e.getY() : panel.getHeight()-1;
+                x = Math.max(e.getX(), 0);
+                y = Math.max(e.getY(), 0);
+
                 if(Objects.equals(modes.get(mode_key), "line")){
                     drawProposedLineInLineMode(e.isShiftDown(), x, y);
+                    repaint();
                 } if(Objects.equals(modes.get(mode_key), "ellipse")){
                     if (model_stack.getLastAddedPointStack().size() == 2) {
 
@@ -198,6 +207,7 @@ public class Controller2D implements Controller {
                         ellipse_rasterizer.drawEllipse(new Ellipse(center_point, major_axis_point, minor_axis_point));
                         point_rasterizer.drawPoint(major_axis_point, 0xFF0000);
                     }
+                    repaint();
                 }
             }
         });
@@ -210,7 +220,9 @@ public class Controller2D implements Controller {
 
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     x = e.getX() < panel.getWidth() ? e.getX() : panel.getWidth()-1;
-                    y = e.getY() < panel.getWidth() ? e.getY() : panel.getHeight()-1;
+                    y = e.getY() < panel.getHeight() ? e.getY() : panel.getHeight()-1;
+                    x = Math.max(e.getX(), 0);
+                    y = Math.max(e.getY(), 0);
 
                     if(mouseClickedMenuRoutine(x, y)){return;}
 
@@ -222,9 +234,10 @@ public class Controller2D implements Controller {
                         clickInPolygonMode(x, y);
                     }else if(Objects.equals(modes.get(mode_key), "ellipse")){
                         clickInEllipseMode(x, y);
+                    }else if(Objects.equals(modes.get(mode_key), "seed fill")){
+                        clickInSeedFillMode(x, y);
                     }
 
-                    repaint();
                 }
             }
 
@@ -294,11 +307,13 @@ public class Controller2D implements Controller {
             Point point2 = model_stack.popLastAddedPoint(0);
             model_stack.addLine(new Line(point1, point2));
         }
+        repaint();
     }
 
     // Point mode mouse click routine.
     private void clickInPointMode(int x, int y){
         model_stack.addPoint(new Point(x, y));
+        repaint();
     }
 
     // Drag-point mode mouse click routine.
@@ -311,6 +326,7 @@ public class Controller2D implements Controller {
             model_stack.movePoint(active_point, x, y);
             active_point.setCoordinates(x, y);
         }
+        repaint();
     }
 
     // Drag-point mode mouse click routine.
@@ -331,6 +347,7 @@ public class Controller2D implements Controller {
             }
             line_rasterizer.drawDottedLine(5, start_point.X(), start_point.Y(), x, y, new Color(0x00FF00));
         }
+        repaint();
     }
 
     public boolean clickIsWithinRectangle(int click_x, int click_y, Polygon rectangle){
@@ -368,6 +385,7 @@ public class Controller2D implements Controller {
         } else if (closest_point != null) {
             model_stack.addTempPoint(closest_point);
         }
+        repaint();
     }
 
     private void clickInEllipseMode(int x, int y){
@@ -388,7 +406,9 @@ public class Controller2D implements Controller {
             Point major_axis_point = model_stack.popLastAddedPoint(0);
             model_stack.addEllipse(new Ellipse(center_point, major_axis_point, minor_axis_point));
         }
-
-
+        repaint();
+    }
+    private void clickInSeedFillMode(int x, int y){
+        seed_fill_rasterizer.seedFill(x, y);
     }
 }
