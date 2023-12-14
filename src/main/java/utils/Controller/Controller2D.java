@@ -67,30 +67,6 @@ public class Controller2D implements Controller {
         polygon_rasterizer = new PolygonRasterizer(raster);
         ellipse_rasterizer = new EllipseRasterizer(raster);
         seed_fill_rasterizer = new SeedFillRasterizer(raster);
-
-
-//        Point p1 = new Point(50, 50);
-//        Point p2 = new Point(100, 250);
-//        Point p3 = new Point(300, 200);
-//        Point p4 = new Point(100, 50);
-//        Point p5 = new Point(20, 50);
-//
-//        model_stack.addPoint(p1);
-//        model_stack.addPoint(p2);
-//        model_stack.addPoint(p3);
-//        model_stack.addPoint(p4);
-//        model_stack.addPoint(p5);
-//
-//
-//        List<Point> vertices = new ArrayList<>();
-//        vertices.add(p1);
-//        vertices.add(p2);
-//        vertices.add(p3);
-//        vertices.add(p4);
-//        vertices.add(p5);
-//
-//        Polygon poly = new Polygon(vertices);
-//        model_stack.addPolygon(poly);
         repaint();
      }
 
@@ -197,17 +173,15 @@ public class Controller2D implements Controller {
 
                 if(Objects.equals(modes.get(mode_key), "line")){
                     drawProposedLineInLineMode(e.isShiftDown(), x, y);
-                    repaint();
                 } if(Objects.equals(modes.get(mode_key), "ellipse")){
                     if (model_stack.getLastAddedPointStack().size() == 2) {
-
+                        repaint();
                         Point center_point = model_stack.getLastAddedPointStack().get(0);
                         Point minor_axis_point = model_stack.getLastAddedPointStack().get(1);
                         Point major_axis_point = new Point(center_point.X(), y);
                         ellipse_rasterizer.drawEllipse(new Ellipse(center_point, major_axis_point, minor_axis_point));
                         point_rasterizer.drawPoint(major_axis_point, 0xFF0000);
                     }
-                    repaint();
                 }
             }
         });
@@ -252,8 +226,6 @@ public class Controller2D implements Controller {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_C) {
                     model_stack.init();
-
-                    // Undo previously placed point.
                 }
                 repaint();
             }
@@ -330,6 +302,7 @@ public class Controller2D implements Controller {
     }
 
     // Drag-point mode mouse click routine.
+    // Draws dotted line to mouse cursor location.
     private void drawProposedLineInLineMode(boolean shift_pressed, int x, int y){
         if(model_stack.getLastAddedPointStack().size() == 1){
             Point start_point = model_stack.getTempPoint(0);
@@ -345,11 +318,12 @@ public class Controller2D implements Controller {
                     }
                 }
             }
+            repaint();
             line_rasterizer.drawDottedLine(5, start_point.X(), start_point.Y(), x, y, new Color(0x00FF00));
         }
-        repaint();
     }
 
+    // Check if mouse-click is within rectangle.
     public boolean clickIsWithinRectangle(int click_x, int click_y, Polygon rectangle){
         int rectangle_max_x = rectangle.getVertices().stream()
                 .mapToInt(Point::X)
@@ -392,6 +366,7 @@ public class Controller2D implements Controller {
         repaint();
     }
 
+    // Ellipse mode mouse click routine.
     private void clickInEllipseMode(int x, int y){
         if (model_stack.getLastAddedPointStack().size() == 0){
             Point point = new Point(x,y);
@@ -412,6 +387,8 @@ public class Controller2D implements Controller {
         }
         repaint();
     }
+
+    // Seed-Fill mode mouse click routine.
     private void clickInSeedFillMode(int x, int y){
         seed_fill_rasterizer.seedFill(x, y);
     }

@@ -34,11 +34,7 @@ public class EllipseRasterizer extends CommonRasterizer{
         // For region 1
         while (dx < dy)
         {
-//            plotPoints(center_x, center_y, x, y);
-            raster.setPixel(center_x + x, center_y + y, 0x00FF00);
-            raster.setPixel(center_x - x, center_y + y, 0x00FF00);
-            raster.setPixel(center_x + x, center_y - y, 0x00FF00);
-            raster.setPixel(center_x - x, center_y - y, 0x00FF00);
+            plotPoints(center_x, center_y, x, y);
             border.add(new Point(center_x + x, center_y + y));
             border.add(new Point(center_x - x, center_y + y));
             border.add(new Point(center_x + x, center_y - y));
@@ -71,11 +67,7 @@ public class EllipseRasterizer extends CommonRasterizer{
         // Plotting points of region 2
         while (y >= 0) {
 
-//            plotPoints(center_x, center_y, x, y);
-            raster.setPixel(center_x + x, center_y + y, 0x00FF00);
-            raster.setPixel(center_x - x, center_y + y, 0x00FF00);
-            raster.setPixel(center_x + x, center_y - y, 0x00FF00);
-            raster.setPixel(center_x - x, center_y - y, 0x00FF00);
+            plotPoints(center_x, center_y, x, y);
             border.add(new Point(center_x + x, center_y + y));
             border.add(new Point(center_x - x, center_y + y));
             border.add(new Point(center_x + x, center_y - y));
@@ -96,23 +88,6 @@ public class EllipseRasterizer extends CommonRasterizer{
                 d2 = d2 + dx - dy + (semi_minor * semi_minor);
             }
         }
-    }
-
-    public List<Point> seedFillNextStep(Point center, List<Point> border){
-        List<Point> out = new ArrayList<>();
-        List<Point> temp = new ArrayList<>();
-        temp.add(new Point(center.X()-1, center.Y()));
-        temp.add(new Point(center.X()+1, center.Y()));
-        temp.add(new Point(center.X(), center.Y()-1));
-        temp.add(new Point(center.X(), center.Y()+1));
-
-
-        for (Point point :temp){
-            if (!border.contains(point)){
-                out.add(point);
-            }
-        }
-        return out;
     }
 
     // Print points based on 4-way symmetry

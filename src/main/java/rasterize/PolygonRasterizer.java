@@ -1,11 +1,8 @@
 package rasterize;
 
-import rasterize.CommonRasterizer.*;
-
 import struct.Point;
 import struct.Polygon;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,18 +32,9 @@ public class PolygonRasterizer extends CommonRasterizer  {
             if (!pixels_on_y_axis.containsKey(pixel.Y())){
                 pixels_on_y_axis.put(pixel.Y(), new ArrayList<>());
             }
-//            if ( pixels_on_y_axis.get(pixel.Y()).contains(pixel.X())){
-//                continue;
-//            }
             pixels_on_y_axis.get(pixel.Y()).add(pixel.X());
         }
-//        for (int i = 0; i < polygon_vertices.size()-1; i++){
-//            Point a = polygon_vertices.get(i);
-//            int idx = pixels_on_y_axis.get(a.Y()).indexOf(a.X());
-//            if (idx != -1) {
-//                pixels_on_y_axis.get(a.Y()).remove(idx);
-//            }
-//        }
+
         for (int y : pixels_on_y_axis.keySet()){
             Collections.sort(pixels_on_y_axis.get(y));
         }
@@ -65,9 +53,7 @@ public class PolygonRasterizer extends CommonRasterizer  {
             if (!pixels_on_x_axis.containsKey(pixel.X())){
                 pixels_on_x_axis.put(pixel.X(), new ArrayList<>());
             }
-//            if ( pixels_on_x_axis.get(pixel.X()).contains(pixel.Y())){
-//                continue;
-//            }
+
             pixels_on_x_axis.get(pixel.X()).add(pixel.Y());
 
         }
@@ -76,32 +62,26 @@ public class PolygonRasterizer extends CommonRasterizer  {
         }
         // ---------------------------------------------------
 
-        for (Integer key : pixels_on_y_axis.keySet()){
-            int y = key;
+        for (Integer y_axis : pixels_on_y_axis.keySet()){
 
-            if (pixels_on_y_axis.get(key).size() > 0){
-                for (int idx = 1; idx < pixels_on_y_axis.get(key).size(); idx += 1){
-                    int x1 = pixels_on_y_axis.get(key).get(idx-1);
-                    int x2 = pixels_on_y_axis.get(key).get(idx);
-//                    if ((idx%2 == 1 && pixels_on_y_axis.get(key).size()-idx %2 == 1)){
-//                        for(Point point : getLinePoints(x1, y, x2, y)){raster.setPixel(point.X(), point.Y(), int_color);}
-//                        continue;
-//                    }
-//                    for(Point point : getLinePoints(x1, y, x2, y)){raster.setPixel(point.X(), point.Y(), int_color);}
+            if (pixels_on_y_axis.get(y_axis).size() > 0){
+                for (int idx = 1; idx < pixels_on_y_axis.get(y_axis).size(); idx += 1){
+                    int x1 = pixels_on_y_axis.get(y_axis).get(idx-1);
+                    int x2 = pixels_on_y_axis.get(y_axis).get(idx);
 
-                    int mid_x = (int)(x1+x2)/2;
+                    int mid_x = (x1+x2)/2;
 
                     if(pixels_on_x_axis.get(mid_x) == null){
                         continue;
                     }
 
                     Map<Boolean, List<Integer>> XpartitionedLists = pixels_on_x_axis.get(mid_x).stream()
-                            .collect(Collectors.partitioningBy(value -> value < key));
+                            .collect(Collectors.partitioningBy(value -> value < y_axis));
 
                     List<Integer> smallerThanKeyList = XpartitionedLists.get(true);
                     List<Integer> greaterOrEqualToKeyList = XpartitionedLists.get(false);
 
-                    Map<Boolean, List<Integer>> YpartitionedLists = pixels_on_y_axis.get(key).stream()
+                    Map<Boolean, List<Integer>> YpartitionedLists = pixels_on_y_axis.get(y_axis).stream()
                             .collect(Collectors.partitioningBy(value -> value < mid_x));
 
                     List<Integer> smallerThanMidXList = YpartitionedLists.get(true);
@@ -109,16 +89,15 @@ public class PolygonRasterizer extends CommonRasterizer  {
 
 
                     if(smallerThanMidXList.size()%2 == 1 && greaterOrEqualToMidXList.size()%2 == 1){
-                        for (Point point : getLinePoints(x1, y, x2, y)) {
+                        for (Point point : getLinePoints(x1, y_axis, x2, y_axis)) {
                             raster.setPixel(point.X(), point.Y(), int_color);
                         }
                     }
                     if(smallerThanKeyList.size()%2 == 1 && greaterOrEqualToKeyList.size()%2 == 1){
-                        for (Point point : getLinePoints(x1, y, x2, y)) {
+                        for (Point point : getLinePoints(x1, y_axis, x2, y_axis)) {
                             raster.setPixel(point.X(), point.Y(), int_color);
                         }
                     }
-//                    raster.setPixel(mid_x, key, 0xFF0000);
                 }
             }
         }
