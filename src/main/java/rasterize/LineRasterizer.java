@@ -31,4 +31,8 @@ public class LineRasterizer extends CommonRasterizer{
         }
     }
 
+    public void drawDottedLine(int dot_size, Point a, Point b, Color color) {
+        drawDottedLine(dot_size, a.X(), a.Y(), b.X(), b.Y(), color);
+    }
+
 }

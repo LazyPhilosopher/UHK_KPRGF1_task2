@@ -43,6 +43,7 @@ public class Controller2D implements Controller {
         put(4, "drag point");
         put(5, "ellipse");
         put(6, "seed fill");
+        put(7, "rectangle crop");
     }};
     private Integer mode_key = (Integer) modes.keySet().toArray()[0];
 
@@ -182,6 +183,17 @@ public class Controller2D implements Controller {
                         ellipse_rasterizer.drawEllipse(new Ellipse(center_point, major_axis_point, minor_axis_point));
                         point_rasterizer.drawPoint(major_axis_point, 0xFF0000);
                     }
+                } else if(Objects.equals(modes.get(mode_key), "rectangle crop")){
+                    repaint();
+                    if (model_stack.getLastAddedPointStack().size() == 1) {
+                        Point center_point = model_stack.getLastAddedPointStack().get(0);
+                        List<Point> polygon_vertices = new ArrayList<>();
+                        polygon_vertices.add(center_point);
+                        polygon_vertices.add(new Point(center_point.X(), y));
+                        polygon_vertices.add(new Point(x, y));
+                        polygon_vertices.add(new Point(x, center_point.Y()));
+                        polygon_rasterizer.drawPolygon(new Polygon(polygon_vertices), 0x00AA00);
+                    }
                 }
             }
         });
@@ -210,6 +222,8 @@ public class Controller2D implements Controller {
                         clickInEllipseMode(x, y);
                     }else if(Objects.equals(modes.get(mode_key), "seed fill")){
                         clickInSeedFillMode(x, y);
+                    }else if(Objects.equals(modes.get(mode_key), "rectangle crop")) {
+                        clickInRectangleCropMode(x, y);
                     }
 
                 }
@@ -361,7 +375,7 @@ public class Controller2D implements Controller {
         } else {
             Point new_point = new Point(x, y);
             model_stack.addPoint(new_point);
-            model_stack.addTempPoint(new_point);
+//            model_stack.addTempPoint(new_point);
         }
         repaint();
     }
@@ -391,5 +405,37 @@ public class Controller2D implements Controller {
     // Seed-Fill mode mouse click routine.
     private void clickInSeedFillMode(int x, int y){
         seed_fill_rasterizer.seedFill(x, y);
+    }
+
+    private void clickInRectangleCropMode(int x, int y){
+        Point new_point = new Point(x,y);
+        model_stack.addPoint(new_point);
+
+//        Point point = model_stack.getClosestPoint(x ,y, 5);
+//        point.popPointFromRelatedObjects();
+//        model_stack.getPointStack().remove(point);
+
+        if (model_stack.getLastAddedPointStack().size() == 2) {
+            Point center_point = model_stack.getLastAddedPointStack().get(0);
+            Point bottom_right_point = model_stack.getLastAddedPointStack().get(0);
+            List<Point> polygon_vertices = new ArrayList<>();
+            polygon_vertices.add(center_point);
+            polygon_vertices.add(new Point(center_point.X(), bottom_right_point.Y()));
+            polygon_vertices.add(new Point(bottom_right_point.X(), bottom_right_point.Y()));
+            polygon_vertices.add(new Point(bottom_right_point.X(), center_point.Y()));
+            Polygon crop_polygon = new Polygon(polygon_vertices);
+
+            List<Point> points_to_delete = new ArrayList<>();
+            for (Point point : model_stack.getPointStack()){
+                if (!clickIsWithinRectangle(point.X(), point.Y(), crop_polygon)){
+                    point.popPointFromRelatedObjects();
+                    points_to_delete.add(point);
+                }
+            }
+            for (Point point : points_to_delete){
+                model_stack.getPointStack().remove(point);
+            }
+            repaint();
+        }
     }
 }

@@ -10,11 +10,19 @@ public class Polygon {
      * @param vertices list of polygon edge points.
      */
     public Polygon(List<Point> vertices){
-        _vertices = vertices;
+        this._vertices = vertices;
+        for (Point point : this._vertices){
+            point.addRelatedObject(this);
+        }
     }
+
 
     // Polygon vertices getter method.
     public List<Point>getVertices(){
         return _vertices;
+    }
+
+    public void removePoint(Point point){
+        this._vertices.remove(point);
     }
 }
