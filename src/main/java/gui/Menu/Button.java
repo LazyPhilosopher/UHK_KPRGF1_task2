@@ -1,6 +1,4 @@
-package utils.gui;
-
-import struct.Point;
+package gui.Menu;
 
 public class Button {
     private String _text;

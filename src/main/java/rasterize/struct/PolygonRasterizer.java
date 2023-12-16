@@ -1,14 +1,15 @@
-package rasterize;
+package rasterize.struct;
 
+import rasterize.CommonRasterizer;
+import rasterize.Raster;
 import struct.Point;
 import struct.Polygon;
 
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class PolygonRasterizer extends CommonRasterizer  {
+public class PolygonRasterizer extends CommonRasterizer {
 
     public PolygonRasterizer(Raster raster){
         super(raster);
@@ -101,10 +102,26 @@ public class PolygonRasterizer extends CommonRasterizer  {
                 }
             }
         }
+        for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), 0xFFFFFF);}
+    }
+
+    public List<Point> get_polygon_pixels(Polygon polygon){
+        List<Point> out = new ArrayList<>();
+
+        List<Point> polygon_vertices = new ArrayList<>(polygon.getVertices());
+        polygon_vertices.add(polygon_vertices.get(0));
+
         for (int i = 0; i < polygon_vertices.size()-1; i++){
             Point a = polygon_vertices.get(i);
             Point b = polygon_vertices.get(i+1);
-            for(Point point : getLinePoints( a, b)){raster.setPixel(point.X(), point.Y(), 0xFFFFFF);}
+            List<Point> edge_points = getLinePoints( a, b);
+            for(Point point : edge_points){
+                point.addRelatedStruct(a);
+                point.addRelatedStruct(b);
+//                point.addRelatedStruct(polygon);
+            }
+            out.addAll(edge_points);
         }
+        return out;
     }
 }

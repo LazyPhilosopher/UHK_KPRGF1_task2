@@ -1,9 +1,11 @@
 package struct;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Polygon {
+public class Polygon implements Struct {
     private final List<Point> _vertices;
+    private List<Struct> _related_objects = new ArrayList<>();
 
     /**
      * Main class constructor method.
@@ -12,10 +14,10 @@ public class Polygon {
     public Polygon(List<Point> vertices){
         this._vertices = vertices;
         for (Point point : this._vertices){
-            point.addRelatedObject(this);
+            point.addRelatedStruct(this);
+            this.addRelatedStruct(point);
         }
     }
-
 
     // Polygon vertices getter method.
     public List<Point>getVertices(){
@@ -24,5 +26,21 @@ public class Polygon {
 
     public void removePoint(Point point){
         this._vertices.remove(point);
+        this._related_objects.remove(point);
+    }
+
+    @Override
+    public void addRelatedStruct(Struct struct) {
+        this._related_objects.add(struct);
+    }
+
+    @Override
+    public void removeRelatedStruct(Struct struct) {
+        this._related_objects.remove(struct);
+    }
+
+    @Override
+    public List<Struct> getRelatedStructs() {
+        return this._related_objects;
     }
 }

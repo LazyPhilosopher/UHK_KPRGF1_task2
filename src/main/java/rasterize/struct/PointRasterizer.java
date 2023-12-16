@@ -1,5 +1,7 @@
-package rasterize;
+package rasterize.struct;
 
+import rasterize.CommonRasterizer;
+import rasterize.Raster;
 import struct.Point;
 
 public class PointRasterizer extends CommonRasterizer {

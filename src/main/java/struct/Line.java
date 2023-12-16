@@ -1,8 +1,12 @@
 package struct;
 
-public class Line {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Line implements Struct{
 
     private final Point _start_point, _end_point;
+    private final List<Struct> _related_objects = new ArrayList<>();
 
     /**
      * Main class constructor method.
@@ -10,8 +14,12 @@ public class Line {
      * @param end_point line end point.
      */
     public Line(Point start_point, Point end_point) {
-        _start_point = start_point;
-        _end_point = end_point;
+        this._start_point = start_point;
+        this._end_point = end_point;
+        this._start_point.addRelatedStruct(this);
+        this._end_point.addRelatedStruct(this);
+        addRelatedStruct(this._start_point);
+        addRelatedStruct(this._end_point);
     }
 
     /**line start point getter method.*/
@@ -24,4 +32,18 @@ public class Line {
         return _end_point;
     }
 
+    @Override
+    public void addRelatedStruct(Struct struct) {
+        this._related_objects.add(struct);
+    }
+
+    @Override
+    public void removeRelatedStruct(Struct struct) {
+        this._related_objects.remove(struct);
+    }
+
+    @Override
+    public List<Struct> getRelatedStructs() {
+        return this._related_objects;
+    }
 }

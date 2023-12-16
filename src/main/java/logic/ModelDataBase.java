@@ -1,9 +1,6 @@
-package utils;
+package logic;
 
-import struct.Ellipse;
-import struct.Line;
-import struct.Point;
-import struct.Polygon;
+import struct.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +12,8 @@ import java.util.List;
  */
 public class ModelDataBase {
 
-    private List<List<List<Point>>> coordinated_point_stack = new ArrayList<>();
+    private List<List<List<Point>>> coordinated_vertex_stack = new ArrayList<>();
+    private List<List<List<Point>>> coordinated_pixel_stack = new ArrayList<>();
     private List<Point> last_added_point_stack = new ArrayList<>();
 
     private List<Point> point_stack = new ArrayList<>();
@@ -42,19 +40,21 @@ public class ModelDataBase {
      * @param y_axis_size The canvas height.
      */
     public void init(int x_axis_size, int y_axis_size){
-        coordinated_point_stack = new ArrayList<>();
-        line_stack = new ArrayList<>();
-        last_added_point_stack = new ArrayList<>();
-        polygon_stack = new ArrayList<>();
-        point_stack = new ArrayList<>();
-        ellipse_stack = new ArrayList<>();
+        this.coordinated_vertex_stack = new ArrayList<>();
+        this.coordinated_pixel_stack = new ArrayList<>();
+        this.line_stack = new ArrayList<>();
+        this.last_added_point_stack = new ArrayList<>();
+        this.polygon_stack = new ArrayList<>();
+        this.point_stack = new ArrayList<>();
+        this.ellipse_stack = new ArrayList<>();
 
         for (int x = 0; x < x_axis_size; x++) {
-            coordinated_point_stack.add(new ArrayList<>());
+            this.coordinated_vertex_stack.add(new ArrayList<>());
             for (int y = 0; y < y_axis_size; y++) {
-                coordinated_point_stack.get(x).add(new ArrayList<>());
+                this.coordinated_vertex_stack.get(x).add(new ArrayList<>());
             }
         }
+        initPixelStack();
     }
 
     /**
@@ -63,7 +63,7 @@ public class ModelDataBase {
      * @param new_line New Line structure.
      */
     public void addLine(Line new_line){
-        line_stack.add(new_line);
+        this.line_stack.add(new_line);
     }
 
     /**
@@ -72,9 +72,9 @@ public class ModelDataBase {
      * @param new_point New Point structure.
      */
     public void addPoint(Point new_point){
-        last_added_point_stack.add(new_point);
-        point_stack.add(new_point);
-        coordinated_point_stack.get(new_point.X()).get(new_point.Y()).add(new_point);
+        this.last_added_point_stack.add(new_point);
+        this.point_stack.add(new_point);
+        this.coordinated_vertex_stack.get(new_point.X()).get(new_point.Y()).add(new_point);
     }
 
     /**
@@ -84,7 +84,7 @@ public class ModelDataBase {
      * @param new_point New Point structure.
      */
     public void addTempPoint(Point new_point){
-        last_added_point_stack.add(new_point);
+        this.last_added_point_stack.add(new_point);
     }
 
     /**
@@ -93,11 +93,11 @@ public class ModelDataBase {
      * @param new_polygon New Polygon structure.
      */
     public void addPolygon(Polygon new_polygon){
-        polygon_stack.add(new_polygon);
+        this.polygon_stack.add(new_polygon);
     }
 
     public void addEllipse(Ellipse new_ellipse){
-        ellipse_stack.add(new_ellipse);
+        this.ellipse_stack.add(new_ellipse);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ModelDataBase {
      * @return Line structure stack.
      */
     public List<Line> getLineStack(){
-        return line_stack;
+        return this.line_stack;
     }
 
     /**
@@ -118,11 +118,15 @@ public class ModelDataBase {
      * @return Coordinated point stack array.
      */
     public List<List<List<Point>>> getCoordinatedPointStack(){
-        return coordinated_point_stack;
+        return this.coordinated_vertex_stack;
+    }
+
+    public List<List<List<Point>>> getCoordinatedPixelStack(){
+        return this.coordinated_pixel_stack;
     }
 
     public List<Point> getPointStack(){
-        return point_stack;
+        return this.point_stack;
     }
 
     /**
@@ -131,7 +135,7 @@ public class ModelDataBase {
      * @return Last added Point stack.
      */
     public List<Point> getLastAddedPointStack(){
-        return last_added_point_stack;
+        return this.last_added_point_stack;
     }
 
     /**
@@ -192,13 +196,13 @@ public class ModelDataBase {
         List<Point> out = new ArrayList<>();
 
         int start_x = (coord_x > range ? coord_x - range : 0);
-        int end_x = (coord_x < coordinated_point_stack.size() - range ? coord_x + range : coordinated_point_stack.size());
+        int end_x = (coord_x < coordinated_vertex_stack.size() - range ? coord_x + range : coordinated_vertex_stack.size());
         int start_y = (coord_y > range ? coord_y - range : 0);
-        int end_y = (coord_x < coordinated_point_stack.get(0).size() - range ? coord_y + range : coordinated_point_stack.get(0).size());
+        int end_y = (coord_x < coordinated_vertex_stack.get(0).size() - range ? coord_y + range : coordinated_vertex_stack.get(0).size());
 
         for (int x = start_x; x < end_x; x++){
             for (int y = start_y; y < end_y; y++){
-                out.addAll(coordinated_point_stack.get(x).get(y));
+                out.addAll(coordinated_vertex_stack.get(x).get(y));
             }
         }
         return out;
@@ -258,9 +262,9 @@ public class ModelDataBase {
      *               TODO. check point existance.
      */
     public void movePoint(Point point, int dest_x, int dest_y){
-        List<Point> point_list = coordinated_point_stack.get(point.X()).get(point.Y());
+        List<Point> point_list = coordinated_vertex_stack.get(point.X()).get(point.Y());
 //        point_stack.remove(point);
-        coordinated_point_stack.get(dest_x).get(dest_y).add(point);
+        coordinated_vertex_stack.get(dest_x).get(dest_y).add(point);
         point.setCoordinates(dest_x, dest_y);
     }
 
@@ -271,10 +275,42 @@ public class ModelDataBase {
      *               TODO. check point existance.
      */
     public void deletePoint(Point point){
-        List<Point> point_list = coordinated_point_stack.get(point.X()).get(point.Y());
+        List<Point> point_list = coordinated_vertex_stack.get(point.X()).get(point.Y());
         last_added_point_stack.remove(point);
         point_list.remove(point);
         point_stack.remove(point);
+        for (Struct related_struct: point.getRelatedStructs()){
+            related_struct.removeRelatedStruct(point);
+        }
+    }
+
+    public void deleteLine(Line line){
+        line.start_point().removeRelatedStruct(line);
+        line.end_point().removeRelatedStruct(line);
+        this.line_stack.remove(line);
+    }
+
+    public void addToPixelStack(List<Point> pixels){
+        for (Point pixel : pixels){
+            this.coordinated_pixel_stack.get(pixel.X()).get(pixel.Y()).add(pixel);
+        }
+    }
+
+    public List<Point> getPixelFromCoordinatedStack(int x, int y){
+        return this.coordinated_pixel_stack.get(x).get(y);
+    }
+
+    public void initPixelStack(){
+        coordinated_pixel_stack = new ArrayList<>();
+        int size_x = this.coordinated_vertex_stack.size();
+        int size_y = this.coordinated_vertex_stack.get(0).size();
+
+        for (int x = 0; x < size_x; x++) {
+            this.coordinated_pixel_stack.add(new ArrayList<>());
+            for (int y = 0; y < size_y; y++) {
+                this.coordinated_pixel_stack.get(x).add(new ArrayList<>());
+            }
+        }
     }
 
     /**
@@ -283,7 +319,7 @@ public class ModelDataBase {
      *
      */
     public void init(){
-        init(coordinated_point_stack.size(), coordinated_point_stack.get(0).size());
+        init(this.coordinated_vertex_stack.size(), this.coordinated_vertex_stack.get(0).size());
     }
 
 }

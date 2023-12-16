@@ -1,18 +1,17 @@
 package struct;
 
 
-import struct.Polygon;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Point object class.
  */
-public class Point {
+public class Point implements Struct{
 
     public int _x, _y;
-    public List<Polygon> _related_objects = new ArrayList<>();
+    public List<Struct> _related_objects = new ArrayList<>();
+    private final List<Point> _vertices = null;
 
     /**
      * Main class constructor method.
@@ -45,13 +44,24 @@ public class Point {
         _y = y;
     }
 
-    public void addRelatedObject(Polygon object){
-        this._related_objects.add(object);
+    public void popPointFromRelatedObjects(){
+        for (Struct object : this._related_objects){
+            object.removeRelatedStruct(this);
+        }
     }
 
-    public void popPointFromRelatedObjects(){
-        for (Polygon object : this._related_objects){
-            object.removePoint(this);
-        }
+    @Override
+    public void addRelatedStruct(Struct struct) {
+        this._related_objects.add(struct);
+    }
+
+    @Override
+    public void removeRelatedStruct(Struct struct) {
+        this._related_objects.remove(struct);
+    }
+
+    @Override
+    public List<Struct> getRelatedStructs() {
+        return this._related_objects;
     }
 }

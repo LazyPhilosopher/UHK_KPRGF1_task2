@@ -5,7 +5,7 @@ import struct.Line;
 import java.awt.*;
 
 public abstract class Rasterizer {
-    Raster raster;
+    public Raster raster;
     Color color;
 
     public Rasterizer(Raster raster){

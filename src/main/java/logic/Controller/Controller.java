@@ -1,4 +1,4 @@
-package utils.Controller;
+package logic.Controller;
 
 import gui.Panel;
 

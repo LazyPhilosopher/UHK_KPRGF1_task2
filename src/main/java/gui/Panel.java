@@ -1,10 +1,10 @@
 package gui;
 
-import rasterize.Raster;
 import rasterize.RasterBufferedImage;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,11 +13,15 @@ public class Panel extends JPanel {
 
     private RasterBufferedImage raster;
 
-    public Raster getRaster() {
+    public RasterBufferedImage getRaster() {
         return raster;
     }
 
-    private static final int FPS = 1000 / 50;
+    public void setImg (BufferedImage new_img) {
+        raster.setImg(new_img);
+    }
+
+    private static final int FPS = 5;
     public static final int WIDTH = 800, HEIGHT = 600;
 
     Panel() {

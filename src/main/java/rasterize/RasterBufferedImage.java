@@ -6,11 +6,32 @@ import java.awt.image.BufferedImage;
 
 public class RasterBufferedImage implements Raster {
 
-    private final BufferedImage img;
+    private BufferedImage img;
     private int color;
 
     public BufferedImage getImg() {
         return img;
+    }
+    
+    public BufferedImage copyImg(){
+        // Create a new BufferedImage of the same type and size
+        BufferedImage copy = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
+
+        // Get the graphics context for the new image
+        Graphics g = copy.createGraphics();
+
+        // Draw the original image onto the new image
+        g.drawImage(img, 0, 0, null);
+
+        // Dispose the graphics context to release resources
+        g.dispose();
+
+        // Return the new image
+        return copy;
+    }
+    
+    public void setImg(BufferedImage new_img) {
+        img = new_img;
     }
 
     public RasterBufferedImage(int width, int height) {

@@ -1,5 +1,5 @@
 import gui.Window;
-import utils.Controller.Controller2D;
+import logic.Controller.Controller2D;
 
 import javax.swing.*;
 
