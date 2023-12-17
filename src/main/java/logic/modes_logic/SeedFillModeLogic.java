@@ -13,6 +13,7 @@ public class SeedFillModeLogic {
         this.seed_fill = new SeedFillRasterizer(this.raster);
     }
 
+    // Seed fill mode mouse click routine.
     public void mouseClicked(int x, int y){
         int base_color = raster.getPixel(x, y);
         this.seed_fill.boundaryFill(x, y, 0xF700FF, base_color);

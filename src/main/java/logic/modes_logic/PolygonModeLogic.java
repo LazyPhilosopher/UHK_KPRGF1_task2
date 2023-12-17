@@ -18,7 +18,6 @@ public class PolygonModeLogic {
         } else {
             Point new_point = new Point(x, y);
             structures_db.addPoint(new_point);
-//            model_stack.addTempPoint(new_point);
         }
     }
 }

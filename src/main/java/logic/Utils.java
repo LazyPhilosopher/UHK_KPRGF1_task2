@@ -3,6 +3,9 @@ package logic;
 import struct.Point;
 import struct.Polygon;
 
+/**
+ * Methods for not usage.
+ * */
 public class Utils {
 
     // Check if mouse-click is within rectangle.

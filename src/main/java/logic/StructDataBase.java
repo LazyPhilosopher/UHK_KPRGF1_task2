@@ -263,7 +263,6 @@ public class StructDataBase {
      */
     public void movePoint(Point point, int dest_x, int dest_y){
         List<Point> point_list = coordinated_vertex_stack.get(point.X()).get(point.Y());
-//        point_stack.remove(point);
         coordinated_vertex_stack.get(dest_x).get(dest_y).add(point);
         point.setCoordinates(dest_x, dest_y);
     }

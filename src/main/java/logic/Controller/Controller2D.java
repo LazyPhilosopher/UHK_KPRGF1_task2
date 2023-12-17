@@ -40,7 +40,7 @@ public class Controller2D implements Controller {
     private BufferedImage buffered_panel_raster = null;
     private final Menu menu = new Menu(15, 10);
 
-    Map<Integer, String> modes = new HashMap<Integer, String>() {{
+    Map<Integer, String> modes = new HashMap<>() {{
         put(1, "line");
         put(2, "polygon");
         put(3, "point");
@@ -73,13 +73,21 @@ public class Controller2D implements Controller {
         repaint();
      }
 
+    /**
+     * Repaint panel with previously saved raster.
+     * No structure recalculation will be done.
+     * Used to spare drawing time.
+     */
      private void bufferedRepaint(){
          panel.clear();
          panel.setImg(buffered_panel_raster);
          buffered_panel_raster = panel.getRaster().copyImg();
      }
 
-//     redraw objects stored in model_stack
+    /**
+     * Redraw every structure stored in ModelDataBase object.
+     * Raster image is being saved into buffer afterward.
+     */
     private void repaint() {
         panel.clear();
         structures_database.initPixelStack();
@@ -106,18 +114,15 @@ public class Controller2D implements Controller {
             rasterizer.point.drawPoint(point.X(), point.Y(), structures_database.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
         }
 
-//        for(int x = 0; x < structures_database.getCoordinatedPixelStack().size(); x++){
-//            for(int y = 0; y < structures_database.getCoordinatedPixelStack().get(0).size(); y++){
-//                if(structures_database.getCoordinatedPixelStack().get(x).get(y).size() > 0){
-//                    panel.getRaster().setPixel(x,y, 0x00CC00);
-//                }
-//            }
-//        }
-
         menu.draw(mode_key, modes, panel);
         buffered_panel_raster = panel.getRaster().copyImg();
     }
 
+    /**
+     * Check if user clicked Mode-Switching menu.
+     * If so, mode will be updated and true value is returned.
+     * Otherwise, returns false.
+     */
     public boolean mouseClickedMenuRoutine(int x, int y){
         boolean click_is_within_menu = utils.isWithinRectangle(x, y, menu.getMenuBoundaries());
         if(!click_is_within_menu){
@@ -215,14 +220,13 @@ public class Controller2D implements Controller {
                     repaint();
                 }else if (Objects.equals(modes.get(mode_key), "seed fill")) {
                     logic.seed_fill_mode.mouseClicked(x, y);
+                    // repaint is not being done as it will erase seed filled pixels.
                 }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 dragged_point = null;
-//                structures_database.initPixelStack();
-//                repaint();
             }
         });
 

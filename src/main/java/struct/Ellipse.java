@@ -3,6 +3,9 @@ package struct;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+* Ellipse data structure.
+* */
 public class Ellipse implements Struct{
 
     private final Point _center_point, _semi_minor_point, _semi_major_point;
@@ -12,6 +15,8 @@ public class Ellipse implements Struct{
         this._center_point = center_point;
         this._semi_minor_point = semi_minor_point;
         this._semi_major_point = semi_major_point;
+
+        // Ellipse is saving link to points used in ellipse.
         addRelatedStruct(this._center_point);
         addRelatedStruct(this._semi_minor_point);
         addRelatedStruct(this._semi_major_point);

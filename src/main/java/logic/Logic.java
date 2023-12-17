@@ -3,6 +3,9 @@ package logic;
 import gui.Panel;
 import logic.modes_logic.*;
 
+/**
+ * Module with every mode user interaction definition.
+* */
 public class Logic {
     public PointModeLogic point_mode;
     public LineModeLogic line_mode;

@@ -10,18 +10,13 @@ import java.awt.Color;
 
 
 public class LineModeLogic {
-    // Drag-point mode mouse click routine.
-    // Draws dotted line to mouse cursor location.
-    private LineRasterizer _line_rasterizer;
+    private final LineRasterizer _line_rasterizer;
 
     public LineModeLogic(Panel panel){
         this._line_rasterizer = new LineRasterizer(panel.getRaster());
     }
 
-    public void setLineRasterizer(LineRasterizer new_line_rasterizer){
-        this._line_rasterizer = new_line_rasterizer;
-    }
-
+    // Line mode mouse click routine.
     public void mouseClick(StructDataBase structures_db, boolean shift_pressed, int x, int y){
         if (shift_pressed) {
             if (structures_db.getLastAddedPointStack().size() == 1) {
@@ -55,6 +50,8 @@ public class LineModeLogic {
         }
     }
 
+    // Line mode mouse move routine.
+    // Draws dotted line to mouse cursor location.
     public void mouseMoved(StructDataBase structures_db, boolean shift_pressed, int x, int y){
         drawDottedLine(structures_db, shift_pressed, x, y);
     }
