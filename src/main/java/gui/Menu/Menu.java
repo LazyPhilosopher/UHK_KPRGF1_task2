@@ -109,7 +109,7 @@ public class Menu {
                 new Point(menu_padding + menu_x_dimension, y),
                 new Point(menu_padding, y));
         this.setMenuBoundaries(new Polygon(menu_vertices));
-        polygon_rasterizer.drawPolygon(this.getMenuBoundaries(), 0x333333);
+        polygon_rasterizer.drawFilledPolygon(this.getMenuBoundaries(), 0x333333);
 
         // Draw each menu button
         int start_x_pos = menu_padding + margin;
@@ -121,7 +121,7 @@ public class Menu {
                     new Point(start_x_pos + menu_dimensions[0] - 2*margin, start_y_pos + margin),
                     new Point(start_x_pos, start_y_pos + margin));
             this.addButtonBoundaries(mode, new Polygon(button_vertices));
-            polygon_rasterizer.drawPolygon(this.getButtonBoundaries(mode), Objects.equals(mode, active_mode_key) ? 0x00AA00 : 0x000000);
+            polygon_rasterizer.drawFilledPolygon(this.getButtonBoundaries(mode), Objects.equals(mode, active_mode_key) ? 0x00AA00 : 0x000000);
             panel.writeText(this.getButton(mode).getText(),
                     this.getFontSize(), start_x_pos + margin, start_y_pos, 0xFFFFFF);
 

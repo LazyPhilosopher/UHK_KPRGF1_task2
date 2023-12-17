@@ -10,8 +10,8 @@ import java.util.Objects;
 /**
  * Common rasterizer for drawing all supported shapes.
  */
-public class CommonRasterizer extends Rasterizer {
-    public CommonRasterizer(Raster raster){
+public class RasterizerUtils extends Rasterizer {
+    public RasterizerUtils(Raster raster){
         super(raster);
     }
 
@@ -78,9 +78,5 @@ public class CommonRasterizer extends Rasterizer {
     }
     public List<Point> getXOrientedLinePoints(Point a, Point b){
         return getLinePoints("X", a.X(), a.Y(), b.X(), b.Y());
-    }
-
-    public void clear(){
-        raster.clear();
     }
 }

@@ -1,6 +1,6 @@
 package rasterize.struct;
 
-import rasterize.CommonRasterizer;
+import rasterize.RasterizerUtils;
 import rasterize.Raster;
 import struct.Line;
 import struct.Point;
@@ -9,7 +9,7 @@ import java.awt.*;
 import java.util.List;
 
 
-public class LineRasterizer extends CommonRasterizer {
+public class LineRasterizer extends RasterizerUtils {
 
     public LineRasterizer(Raster raster){
         super(raster);

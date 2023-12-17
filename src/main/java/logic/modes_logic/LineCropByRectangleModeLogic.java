@@ -1,30 +1,30 @@
-package logic.modes;
+package logic.modes_logic;
 
 import gui.Panel;
-import logic.ModelDataBase;
+import logic.StructDataBase;
 import rasterize.struct.LineRasterizer;
 import rasterize.struct.PolygonRasterizer;
 import struct.Line;
 import struct.Point;
 import struct.Polygon;
 import struct.Struct;
-import logic.CommonLogic;
+import logic.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RectangleCropModeLogic {
+public class LineCropByRectangleModeLogic {
     PolygonRasterizer _polygon_rasterizer;
     LineRasterizer _line_rasterizer;
-    CommonLogic _common_logic;
+    Utils _utils;
 
-    public RectangleCropModeLogic(Panel panel) {
+    public LineCropByRectangleModeLogic(Panel panel) {
         this._polygon_rasterizer = new PolygonRasterizer(panel.getRaster());
         this._line_rasterizer = new LineRasterizer(panel.getRaster());
-        this._common_logic = new CommonLogic();
+        this._utils = new Utils();
     }
 
-    public void mouseClick(ModelDataBase structure_db, int x, int y) {
+    public void mouseClick(StructDataBase structure_db, int x, int y) {
         Point click_point = new Point(x, y);
         structure_db.addTempPoint(click_point);
 
@@ -32,17 +32,11 @@ public class RectangleCropModeLogic {
         if (structure_db.getLastAddedPointStack().size() == 2) {
             Point center_point = structure_db.getLastAddedPointStack().get(0);
             Point bottom_right_point = structure_db.getLastAddedPointStack().get(1);
-
-            List<Point> polygon_vertices = new ArrayList<>();
-            polygon_vertices.add(center_point);
-            polygon_vertices.add(new Point(center_point.X(), bottom_right_point.Y()));
-            polygon_vertices.add(new Point(bottom_right_point.X(), bottom_right_point.Y()));
-            polygon_vertices.add(new Point(bottom_right_point.X(), center_point.Y()));
-            Polygon crop_polygon = new Polygon(polygon_vertices);
+            Polygon crop_polygon = new Polygon(center_point, bottom_right_point);
 
             List<Struct> cropped_structs = new ArrayList<>();
             for(Point point : structure_db.getPointStack()){
-                if(_common_logic.isWithinRectangle(point.X(), point.Y(), crop_polygon)){
+                if(_utils.isWithinRectangle(point.X(), point.Y(), crop_polygon)){
                     for (Struct related_struct : point.getRelatedStructs()) {
                         if (cropped_structs.contains(related_struct)) {
                             continue;
@@ -71,7 +65,7 @@ public class RectangleCropModeLogic {
                     Line line = (Line) struct;
                     List<Point> cross_points = linePolygonIntersections(line, crop_polygon);
 
-                    if(!this._common_logic.isWithinRectangle(line.start_point().X(), line.start_point().Y(), crop_polygon)){
+                    if(!this._utils.isWithinRectangle(line.start_point(), crop_polygon)){
                         for (Point cross_point : cross_points){
                             Line new_line = new Line(line.start_point(), cross_point);
                             if(linePolygonIntersections(new_line, crop_polygon).size() < 2){
@@ -85,7 +79,7 @@ public class RectangleCropModeLogic {
                     }
 
 
-                    if(!this._common_logic.isWithinRectangle(line.end_point().X(), line.end_point().Y(), crop_polygon)){
+                    if(!this._utils.isWithinRectangle(line.end_point(), crop_polygon)){
                         for (Point cross_point : cross_points){
                             Line new_line = new Line(line.end_point(), cross_point);
                             if(linePolygonIntersections(new_line, crop_polygon).size() < 2){
@@ -101,13 +95,14 @@ public class RectangleCropModeLogic {
                 }
                 else if(struct instanceof Point){
                     System.out.println("Polygon");
+                    // polygon cropping not implemented due to program architecture complications.
                 }
             }
             structure_db.emptyTempPoints();
         }
     }
 
-    public void mouseMove(ModelDataBase structures_db, int x, int y){
+    public void mouseMoved(StructDataBase structures_db, int x, int y){
         if (structures_db.getLastAddedPointStack().size() == 1) {
             Point center_point = structures_db.getLastAddedPointStack().get(0);
             List<Point> polygon_vertices = new ArrayList<>();
@@ -115,7 +110,7 @@ public class RectangleCropModeLogic {
             polygon_vertices.add(new Point(center_point.X(), y));
             polygon_vertices.add(new Point(x, y));
             polygon_vertices.add(new Point(x, center_point.Y()));
-            this._polygon_rasterizer.drawPolygon(new Polygon(polygon_vertices), 0x00AA00);
+            this._polygon_rasterizer.drawShallowPolygon(new Polygon(polygon_vertices), 0x00AA00);
         }
     }
 

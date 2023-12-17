@@ -10,7 +10,7 @@ import java.util.List;
  * Class for storing geometric structures and their attributes.
  * Method for structure attribute modification are also implemented.
  */
-public class ModelDataBase {
+public class StructDataBase {
 
     private List<List<List<Point>>> coordinated_vertex_stack = new ArrayList<>();
     private List<List<List<Point>>> coordinated_pixel_stack = new ArrayList<>();
@@ -28,7 +28,7 @@ public class ModelDataBase {
      * @param x_axis_size The canvas width.
      * @param y_axis_size The canvas height.
      */
-    public ModelDataBase(int x_axis_size, int y_axis_size) {
+    public StructDataBase(int x_axis_size, int y_axis_size) {
         init(x_axis_size, y_axis_size);
     }
 

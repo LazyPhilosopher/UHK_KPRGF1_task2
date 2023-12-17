@@ -1,15 +1,9 @@
 package logic;
 
-import rasterize.struct.PolygonRasterizer;
-import struct.Line;
 import struct.Point;
 import struct.Polygon;
-import rasterize.CommonRasterizer;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class CommonLogic {
+public class Utils {
 
     // Check if mouse-click is within rectangle.
     public boolean isWithinRectangle(int click_x, int click_y, Polygon rectangle){
@@ -36,5 +30,9 @@ public class CommonLogic {
             return false;
         }
         return true;
+    }
+
+    public boolean isWithinRectangle(Point a, Polygon rectangle){
+        return isWithinRectangle(a.X(), a.Y(), rectangle);
     }
 }

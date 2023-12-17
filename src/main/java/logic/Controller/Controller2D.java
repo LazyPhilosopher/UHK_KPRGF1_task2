@@ -1,20 +1,23 @@
 package logic.Controller;
 
-import gui.Panel;
 import gui.Menu.Menu;
-import logic.CommonLogic;
-import logic.ModelDataBase;
-import logic.modes.*;
-import rasterize.struct.*;
+import gui.Panel;
+import logic.Logic;
+import logic.StructDataBase;
+import logic.Utils;
+import rasterize.StructRasterizer;
+import struct.Ellipse;
 import struct.Line;
 import struct.Point;
 import struct.Polygon;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -28,16 +31,14 @@ public class Controller2D implements Controller {
     private final Panel panel;
 
     private int x,y;
-    CommonLogic common_logic;
-    LineModeLogic line_mode_logic;
-    PointModeLogic point_mode_logic;
-    PolygonModeLogic polygon_mode_logic;
-    DragPointModeLogic drag_point_mode_logic;
-    RectangleCropModeLogic rectangle_crop_mode_logic;
-    private ModelDataBase structures_database;
+    private Utils utils;
+    private Logic logic;
+    private StructDataBase structures_database;
+    private StructRasterizer rasterizer;
+
     public Point dragged_point = null;
     private BufferedImage buffered_panel_raster = null;
-    Menu menu = new Menu(15, 10);
+    private final Menu menu = new Menu(15, 10);
 
     Map<Integer, String> modes = new HashMap<Integer, String>() {{
         put(1, "line");
@@ -46,7 +47,7 @@ public class Controller2D implements Controller {
         put(4, "drag point");
         put(5, "ellipse");
         put(6, "seed fill");
-        put(7, "rectangle crop");
+        put(7, "crop line with rect");
     }};
     private Integer mode_key = (Integer) modes.keySet().toArray()[0];
 
@@ -65,13 +66,10 @@ public class Controller2D implements Controller {
      * Main class private attributes initialization method.
      */
     private void initObjects() {
-        structures_database = new ModelDataBase(panel.getWidth(), panel.getHeight());
-        common_logic = new CommonLogic();
-        line_mode_logic = new LineModeLogic(panel);
-        point_mode_logic = new PointModeLogic();
-        polygon_mode_logic = new PolygonModeLogic();
-        drag_point_mode_logic = new DragPointModeLogic();
-        rectangle_crop_mode_logic = new RectangleCropModeLogic(panel);
+        structures_database = new StructDataBase(panel.getWidth(), panel.getHeight());
+        rasterizer = new StructRasterizer(panel);
+        logic = new Logic(panel);
+        utils = new Utils();
         repaint();
      }
 
@@ -87,34 +85,31 @@ public class Controller2D implements Controller {
         structures_database.initPixelStack();
 
         for (Polygon polygon : structures_database.getPolygonStack()) {
-            PolygonRasterizer polygon_rasterizer = new PolygonRasterizer(panel.getRaster());
-            polygon_rasterizer.drawPolygon(polygon, 0x0000FF);
-            List<Point> polygon_pixels = polygon_rasterizer.get_polygon_pixels(polygon);
+            rasterizer.polygon.drawFilledPolygon(polygon, 0x0000FF);
+            List<Point> polygon_pixels = rasterizer.polygon.get_polygon_pixels(polygon);
             structures_database.addToPixelStack(polygon_pixels);
         }
 
-//        for (Ellipse ellipse : structures_database.getEllipseStack()) {
-//            ellipse_rasterizer.drawEllipse(ellipse);
-//            point_rasterizer.drawPoint(ellipse.center_point(), 0xFFFFFF);
-//        }
+        for (Ellipse ellipse : structures_database.getEllipseStack()) {
+            rasterizer.ellipse.drawEllipse(ellipse);
+            rasterizer.point.drawPoint(ellipse.center_point(), 0xFFFFFF);
+        }
 
         for (Line line : structures_database.getLineStack()) {
-            LineRasterizer line_rasterizer = new LineRasterizer(panel.getRaster());
-            line_rasterizer.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0x00AA00));
-            List<Point> line_pixels = line_rasterizer.getLinePoints(line);
+            rasterizer.line.drawLine(line.start_point().X(), line.start_point().Y(), line.end_point().X(), line.end_point().Y(), new Color(0x00AA00));
+            List<Point> line_pixels = rasterizer.line.getLinePoints(line);
             for(Point pixel : line_pixels){pixel.addRelatedStruct(line);}
             structures_database.addToPixelStack(line_pixels);
         }
 
         for (Point point : structures_database.getPointStack()){
-            PointRasterizer point_rasterizer = new PointRasterizer(panel.getRaster());
-            point_rasterizer.drawPoint(point.X(), point.Y(), structures_database.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
+            rasterizer.point.drawPoint(point.X(), point.Y(), structures_database.getLastAddedPointStack().contains(point) ? 0x00ff00 : 0xff0000);
         }
 
 //        for(int x = 0; x < structures_database.getCoordinatedPixelStack().size(); x++){
 //            for(int y = 0; y < structures_database.getCoordinatedPixelStack().get(0).size(); y++){
 //                if(structures_database.getCoordinatedPixelStack().get(x).get(y).size() > 0){
-//                    panel.getRaster().setPixel(x,y, 0x00AA00);
+//                    panel.getRaster().setPixel(x,y, 0x00CC00);
 //                }
 //            }
 //        }
@@ -124,22 +119,35 @@ public class Controller2D implements Controller {
     }
 
     public boolean mouseClickedMenuRoutine(int x, int y){
+        boolean click_is_within_menu = utils.isWithinRectangle(x, y, menu.getMenuBoundaries());
+        if(!click_is_within_menu){
+            return false;
+        }
         for(Integer mode : modes.keySet()){
-            if(common_logic.isWithinRectangle(x, y, menu.getButtonBoundaries(mode))){
+            if(utils.isWithinRectangle(x, y, menu.getButtonBoundaries(mode))){
                 bufferedRepaint();
                 System.out.printf("Mode: %s\n", modes.get(mode));
                 mode_key = mode;
                 structures_database.emptyTempPoints();
                 menu.draw(mode_key, modes, panel);
                 buffered_panel_raster = panel.getRaster().copyImg();
-                return true;
             }
         }
-        return false;
+        return true;
     }
 
     @Override
     public void initListeners(Panel panel) {
+
+        panel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                panel.resize();
+                rasterizer = new StructRasterizer(panel);
+                repaint();
+                logic = new Logic(panel);
+            }
+        });
 
         panel.addMouseMotionListener(new MouseAdapter() {
             // Click and drag point.
@@ -153,7 +161,7 @@ public class Controller2D implements Controller {
                 y = Math.max(e.getY(), 0);
 
                 if (Objects.equals(mode_key, 4)) {
-                    dragged_point = drag_point_mode_logic.mouseClick(structures_database, dragged_point, x, y);
+                    dragged_point = logic.drag_point_mode.mouseClick(structures_database, dragged_point, x, y);
                     repaint();
                 }
             }
@@ -165,12 +173,17 @@ public class Controller2D implements Controller {
                 x = Math.max(e.getX(), 0);
                 y = Math.max(e.getY(), 0);
 
-                bufferedRepaint();
                 if(Objects.equals(modes.get(mode_key), "line")){
-                    line_mode_logic.mouseMove(structures_database, e.isShiftDown(), x, y);
-                }else if(Objects.equals(modes.get(mode_key), "rectangle crop")){
-                    rectangle_crop_mode_logic.mouseMove(structures_database, x, y);
+                    bufferedRepaint();
+                    logic.line_mode.mouseMoved(structures_database, e.isShiftDown(), x, y);
+                }else if(Objects.equals(modes.get(mode_key), "crop line with rect")){
+                    bufferedRepaint();
+                    logic.line_crop_mode.mouseMoved(structures_database, x, y);
+                }else if(Objects.equals(modes.get(mode_key), "ellipse")){
+                    bufferedRepaint();
+                    logic.ellipse_mode.mouseMoved(structures_database, x, y);
                 }
+
             }
         });
 
@@ -186,21 +199,39 @@ public class Controller2D implements Controller {
                 if(mouseClickedMenuRoutine(x, y)){return;}
 
                 if(Objects.equals(modes.get(mode_key), "line")){
-                    line_mode_logic.mouseClick(structures_database, e.isShiftDown(), x, y);
+                    logic.line_mode.mouseClick(structures_database, e.isShiftDown(), x, y);
+                    repaint();
                 }else if (Objects.equals(modes.get(mode_key), "point")) {
-                    point_mode_logic.mouseClick(structures_database, x, y);
+                    logic.point_mode.mouseClick(structures_database, x, y);
+                    repaint();
                 }else if (Objects.equals(modes.get(mode_key), "polygon")) {
-                    polygon_mode_logic.mouseClick(structures_database, x, y);
-                }else if (Objects.equals(modes.get(mode_key), "rectangle crop")) {
-                    rectangle_crop_mode_logic.mouseClick(structures_database, x, y);
+                    logic.polygon_mode.mouseClick(structures_database, x, y);
+                    repaint();
+                }else if (Objects.equals(modes.get(mode_key), "crop line with rect")) {
+                    logic.line_crop_mode.mouseClick(structures_database, x, y);
+                    repaint();
+                }else if (Objects.equals(modes.get(mode_key), "ellipse")) {
+                    logic.ellipse_mode.mouseClick(structures_database, x, y);
+                    repaint();
+                }else if (Objects.equals(modes.get(mode_key), "seed fill")) {
+                    logic.seed_fill_mode.mouseClicked(x, y);
                 }
-                repaint();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 dragged_point = null;
-                structures_database.initPixelStack();
+//                structures_database.initPixelStack();
+//                repaint();
+            }
+        });
+
+        panel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_C) {
+                    structures_database.init();
+                }
                 repaint();
             }
         });

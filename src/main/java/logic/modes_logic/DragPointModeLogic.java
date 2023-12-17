@@ -1,13 +1,13 @@
-package logic.modes;
+package logic.modes_logic;
 
-import logic.ModelDataBase;
+import logic.StructDataBase;
 import struct.Point;
 
 public class DragPointModeLogic {
 
     public DragPointModeLogic(){};
 
-    public Point mouseClick(ModelDataBase structures_db, Point dragged_point, int x, int y){
+    public Point mouseClick(StructDataBase structures_db, Point dragged_point, int x, int y){
         if (dragged_point == null){
             dragged_point = structures_db.getClosestPoint(x, y, 5);
         }

@@ -1,10 +1,10 @@
 package rasterize.struct;
 
-import rasterize.CommonRasterizer;
+import rasterize.RasterizerUtils;
 import rasterize.Raster;
 import struct.Point;
 
-public class PointRasterizer extends CommonRasterizer {
+public class PointRasterizer extends RasterizerUtils {
 
     public PointRasterizer(Raster raster){
         super(raster);

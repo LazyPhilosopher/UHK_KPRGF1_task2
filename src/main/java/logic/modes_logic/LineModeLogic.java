@@ -1,7 +1,7 @@
-package logic.modes;
+package logic.modes_logic;
 
 import gui.Panel;
-import logic.ModelDataBase;
+import logic.StructDataBase;
 import rasterize.struct.LineRasterizer;
 import struct.Line;
 import struct.Point;
@@ -22,7 +22,7 @@ public class LineModeLogic {
         this._line_rasterizer = new_line_rasterizer;
     }
 
-    public void mouseClick(ModelDataBase structures_db, boolean shift_pressed, int x, int y){
+    public void mouseClick(StructDataBase structures_db, boolean shift_pressed, int x, int y){
         if (shift_pressed) {
             if (structures_db.getLastAddedPointStack().size() == 1) {
                 Point start_point = structures_db.getTempPoint(0);
@@ -55,11 +55,11 @@ public class LineModeLogic {
         }
     }
 
-    public void mouseMove(ModelDataBase structures_db, boolean shift_pressed, int x, int y){
+    public void mouseMoved(StructDataBase structures_db, boolean shift_pressed, int x, int y){
         drawDottedLine(structures_db, shift_pressed, x, y);
     }
 
-    private void drawDottedLine(ModelDataBase structures_db, boolean shift_pressed, int x, int y){
+    private void drawDottedLine(StructDataBase structures_db, boolean shift_pressed, int x, int y){
         if(structures_db.getLastAddedPointStack().size() == 1){
             Point start_point = structures_db.getTempPoint(0);
             if (shift_pressed) {

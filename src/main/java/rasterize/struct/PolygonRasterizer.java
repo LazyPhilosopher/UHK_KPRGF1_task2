@@ -1,6 +1,6 @@
 package rasterize.struct;
 
-import rasterize.CommonRasterizer;
+import rasterize.RasterizerUtils;
 import rasterize.Raster;
 import struct.Point;
 import struct.Polygon;
@@ -9,13 +9,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class PolygonRasterizer extends CommonRasterizer {
+public class PolygonRasterizer extends RasterizerUtils {
 
     public PolygonRasterizer(Raster raster){
         super(raster);
     }
 
-    public void drawPolygon(Polygon polygon, int int_color) {
+    public void drawFilledPolygon(Polygon polygon, int int_color) {
         List<Point> polygon_vertices = new ArrayList<>(polygon.getVertices());
         polygon_vertices.add(polygon_vertices.get(0));
 
@@ -102,7 +102,11 @@ public class PolygonRasterizer extends CommonRasterizer {
                 }
             }
         }
-        for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), 0xFFFFFF);}
+        drawShallowPolygon(polygon, 0xFFFFFF);
+    }
+
+    public void drawShallowPolygon(Polygon polygon, int int_color){
+        for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), int_color);}
     }
 
     public List<Point> get_polygon_pixels(Polygon polygon){
